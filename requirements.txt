@@ -1,3 +1,4 @@
+streamlit
 numpy
 pandas
 
@@ -7,10 +8,12 @@ dlib-bin
 setuptools<70.0.0
 git+https://github.com/ageitgey/face_recognition_models
 
-supabase
+supabase 
 bcrypt
 
 segno
 pillow
 
-streamlit
+librosa
+resemblyzer
+
