@@ -6,8 +6,8 @@ from src.components.dialog_auto_enroll import auto_enroll_dialog
 
 def main():
     st.set_page_config(
-        page_title='SnapClass - Making Attendance faster using AI',
-        page_icon='https://i.ibb.co/YTYGn5qV/logo.png'
+        page_title='FACE-TRACK - AI powered Attendance System',
+        page_icon='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_oYu0ydlehQLoH8G1cSo_zkHOETtyNRjhtdIaSfx1eg&s=10'
     )
     if "login_type" not in st.session_state:
         st.session_state["login_type"] = None
