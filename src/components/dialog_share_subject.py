@@ -80,7 +80,7 @@ def share_subject_dialog(subject_name, subject_code, section):
             }
         </style>
     """, unsafe_allow_html=True)
-    app_domain = "face_trackk-main.streamlit.app"
+    app_domain = "face-track-main.streamlit.app"
 
     subject_code = subject_code.strip().upper()
     section = section.strip().upper()
