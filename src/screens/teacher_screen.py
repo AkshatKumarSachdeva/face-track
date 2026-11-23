@@ -79,56 +79,102 @@ def teacher_dashboard():
 
 def teacher_tab_attendance_records():
     st.header("Attendance Records")
-    teacher_id= st.session_state.teacher_data['teacher_id']
-    records= get_attendance_for_teacher(teacher_id)
+    teacher_id = st.session_state.teacher_data['teacher_id']
+    records = get_attendance_for_teacher(teacher_id)
     if not records:
+        st.info("No attendance records found.")
         return
-    data=[]
+    data = []
     for r in records:
-        ts=r.get('timestamp')
+        ts = r.get('timestamp')
+        subject = r.get('subjects') or {}
         data.append({
-            "ts_group":ts.split(".")[0] if ts else None,
-            "Time":datetime.fromisoformat(ts).strftime("%Y-%m-%d %I:%M %p") if ts else 'NA',
-            "Subject":r['subjects']['name'],
-            "Subject Code":r['subjects']['subject_code'],
-            "is_present":bool(r.get('is_present',False))
+            "ts_group": ts,
+            "Time": (
+                datetime.fromisoformat(ts).strftime("%Y-%m-%d %I:%M %p")
+                if ts else "NA"
+            ),
+            "Subject": subject.get('name', 'Unknown'),
+            "Subject Code": subject.get('subject_code', 'NA'),
+            "Section": subject.get('section', 'NA'),
+            "is_present": bool(r.get('is_present', False))
         })
-    df=pd.DataFrame(data)
-    summary=(
-        df.groupby(['ts_group','Time','Subject','Subject Code'])
+
+    df = pd.DataFrame(data)
+    summary = (
+        df.groupby([
+            'ts_group',
+            'Time',
+            'Subject',
+            'Subject Code',
+            'Section'
+        ])
         .agg(
-            Present_Count=('is_present','sum'),
-            Total_Count=('is_present','count')
-        ).reset_index()
+            Present_Count=('is_present', 'sum'),
+            Total_Count=('is_present', 'count')
+        )
+        .reset_index()
     )
-    summary['Attendance Stats']=(
-        "✅ "+summary['Present_Count'].astype(str)+" /"+summary['Total_Count'].astype(str)+" Students"
+    summary['Attendance Stats'] = ("✅ "+ summary['Present_Count'].astype(str)+ " / "+ summary['Total_Count'].astype(str)+ " Students")
+
+    display_df = (
+        summary.sort_values(
+            by='ts_group',
+            ascending=False
+        )[
+            [
+                'Time',
+                'Subject',
+                'Subject Code',
+                'Section',
+                'Attendance Stats'
+            ]
+        ]
     )
-    display_df=(summary.sort_values(by='ts_group',ascending=False)
-                [['Time','Subject','Subject Code','Attendance Stats']]
-                )
-    st.dataframe(display_df,width='stretch',hide_index=True)
+    st.dataframe(
+        display_df,
+        width='stretch',
+        hide_index=True
+    )
     
 def teacher_tab_manage_subjects():
-    teacher_id=st.session_state.teacher_data['teacher_id']
-    col1,col2=st.columns(2)
+    teacher_id = st.session_state.teacher_data['teacher_id']
+    col1, col2 = st.columns(2)
     with col1:
         st.header('Manage Subjects')
     with col2:
-        if st.button('Create new Subject', width='stretch'):
+        if st.button(
+            'Create new Subject',
+            width='stretch',
+            key='create_new_subject'
+        ):
             create_subject_dialog(teacher_id)
 
-    #LIST all SUBJECTS
-    subjects=get_teacher_subject(teacher_id)
-    if subjects:
-        for sub in subjects:
-            stats=[
-                ("👥","Students",sub['total_students']),
-                ("⏰","Classes",sub["total_classes"] )
-            ]
-        def share_btn():
-            if st.button(f"Share Code: {sub["name"]}", key=f"share_{sub['subject_code']}", icon=":material/share:"):
-                share_subject_dialog(sub['name'],sub['subject_code'])
+    subjects = get_teacher_subject(teacher_id)
+
+    if not subjects:
+        st.info("NO SUBJECTS FOUND. CREATE ONE ABOVE.")
+        return
+
+    for sub in subjects:
+
+        stats = [("👥", "Students", sub['total_students']),("⏰", "Classes", sub['total_classes'])]
+        def share_btn(
+            subject_id=sub['subject_id'],
+            subject_name=sub['name'],
+            subject_code=sub['subject_code'],
+            section=sub['section']
+        ):
+            if st.button(
+                f"Share Code: {subject_name} - {section}",
+                key=f"share_{subject_id}",
+                icon=":material/share:"
+            ):
+                share_subject_dialog(
+                    subject_name,
+                    subject_code,
+                    section
+                )
             st.space()
         subject_card(
             name=sub['name'],
@@ -137,8 +183,7 @@ def teacher_tab_manage_subjects():
             stats=stats,
             footer_callback=share_btn
         )
-    else:
-        st.info("NO SUBJECTS FOUND. CREATE ONE ABOVE.")
+    
 
 def teacher_tab_take_attendance():
     teacher_id=st.session_state.teacher_data['teacher_id']
@@ -149,7 +194,7 @@ def teacher_tab_take_attendance():
     if not subjects:
         st.warning("You haven't created any subject yet! Please Create one to begin!")
         return
-    subject_options={f"{s['name']} - {s['subject_code']}": s['subject_id'] for s in subjects}
+    subject_options = {f"{s['name']} - {s['subject_code']} - Section {s['section']}": s['subject_id'] for s in subjects}
     col1,col2=st.columns([3,1], vertical_alignment="bottom")
     with col1:
         st.markdown("""

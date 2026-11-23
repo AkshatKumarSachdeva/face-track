@@ -51,12 +51,17 @@ def student_dashboard():
         sub=sub_node['subjects']
         sid=sub['subject_id']
         stats=stats_map.get(sid,{"total":0,"attended":0})
-        def unenroll_btn():
-            if st.button('Unenroll from this course',type='tertiary',width='stretch',icon=':material/delete_forever:'):
-                unenroll_student_to_subject(student_id,sid)
-                st.toast(f"Unenrolled from {sub['name']} successfully")
+        def unenroll_btn(subject_id=sid, subject_name=sub['name']):
+            if st.button(
+                'Unenroll from this course',
+                type='tertiary',
+                width='stretch',
+                icon=':material/delete_forever:',
+                key=f'unenroll_{student_id}_{subject_id}'
+            ):
+                unenroll_student_to_subject(student_id, subject_id)
+                st.toast(f"Unenrolled from {subject_name} successfully")
                 st.rerun()
-
         with cols[i%2]:
             subject_card(
                 name=sub['name'],
@@ -93,32 +98,46 @@ def student_screen():
 
     show_registration=False
     photo_source=st.camera_input("Position your face in the center")
-    if photo_source:
-        img=np.array(Image.open(photo_source))
 
+    if photo_source:
+        img = np.array(Image.open(photo_source).convert('RGB'))
         with st.spinner("AI is Scanning..."):
-            detected, all_ids, num_faces=predict_attendance(img)
-            if(num_faces==0):
-                st.warning("No face detected! Please try again.", icon="⚠️")
-            if(num_faces>1):
-                st.warning("Multiple faces detected! Please try again.", icon="⚠️")
+            detected, all_ids, num_faces = predict_attendance(img)
+            if num_faces == 0:
+                st.warning(
+                    "No face detected! Please try again.",
+                    icon="⚠️"
+                )
+            elif num_faces > 1:
+                st.warning(
+                    "Multiple faces detected! Please try again.",
+                    icon="⚠️"
+                )
             else:
                 if detected:
-                    student_id=list(detected.keys())[0]
-                    all_students=get_all_students()
-                    student=next((s for s in all_students if s.get('student_id') == student_id), None)
-
+                    student_id = int(list(detected.keys())[0])
+                    all_students = get_all_students()
+                    student = next(
+                        (
+                            s for s in all_students
+                            if int(s.get('student_id')) == student_id
+                        ),
+                        None
+                    )
                     if student:
-                        st.session_state.is_logged_in=True
-                        st.session_state.user_role='student'
-                        st.session_state.student_data=student
-                        st.toast(f"Welcome Back {student['name']}")
+                        st.session_state.is_logged_in = True
+                        st.session_state.user_role = 'student'
+                        st.session_state.student_data = student
+                        st.toast(
+                            f"Welcome Back {student['name']}"
+                        )
                         time.sleep(1)
                         st.rerun()
-                        
                 else:
-                    st.info("Face not recognized! You might be a new student")
-                    show_registration=True
+                    st.info(
+                        "Face not recognized! You might be a new student."
+                    )
+                    show_registration = True
 
     if show_registration:
         with st.container(border=True):

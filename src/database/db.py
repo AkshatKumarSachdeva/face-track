@@ -33,12 +33,17 @@ def get_all_students():
 def create_student(new_name, face_embedding=None,voice_embedding=None):
     data={'name':new_name,'face_embedding':face_embedding,'voice_embedding':voice_embedding}
     response=supabase.table('students').insert(data).execute()
-    return response.data
+    return response.data[0] if response.data else None
 
-def create_subject(subject_code,name,section, teacher_id):
-    data={"subject_code":subject_code,"name":name,"section":section,"teacher_id":teacher_id}
-    response=supabase.table("subjects").insert(data).execute()
-    return response.data
+def create_subject(subject_code, name, section, teacher_id):
+    data = {
+        "subject_code": subject_code.strip().upper(),
+        "name": name.strip(),
+        "section": section.strip().upper(),
+        "teacher_id": teacher_id
+    }
+    response = supabase.table("subjects").insert(data).execute()
+    return response.data[0] if response.data else None
 
 def get_teacher_subject(teacher_id):
     response=supabase.table('subjects').select("*,subject_students(count),attendance_logs(timestamp)").eq("teacher_id",teacher_id).execute()
@@ -78,3 +83,14 @@ def get_attendance_for_teacher(teacher_id):
     response=supabase.table('attendance_logs').select("*,subjects!inner(*)").eq('subjects.teacher_id',teacher_id).execute()
     return response.data
 
+def get_subject_by_code_section(subject_code, section):
+    response = (
+        supabase.table("subjects")
+        .select("subject_id, name, subject_code, section, teacher_id")
+        .eq("subject_code", subject_code.strip().upper())
+        .eq("section", section.strip().upper())
+        .execute()
+    )
+    if not response.data:
+        return None
+    return response.data[0]

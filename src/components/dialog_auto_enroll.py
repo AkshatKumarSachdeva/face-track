@@ -1,10 +1,66 @@
+# import streamlit as st
+# from src.database.config import supabase
+# from src.database.db import enroll_student_to_subject
+# import time
+
+# @st.dialog("Quick Enrollment")
+# def auto_enroll_dialog(subject_code):
+#     st.markdown("""
+#         <style>
+#             /* Main dialog title and headings */
+#             [data-testid="stDialog"] h1,
+#             [data-testid="stDialog"] h2,
+#             [data-testid="stDialog"] h3,
+#             [data-testid="stDialog"] .stMarkdown h1,
+#             [data-testid="stDialog"] .stMarkdown h2,
+#             [data-testid="stDialog"] .stMarkdown h3 {
+#                 color: var(--text-color) !important;
+#                 opacity: 1 !important;
+#                 font-weight: 700 !important;
+#             }
+#         </style>
+#         """, unsafe_allow_html=True)
+#     student_id=st.session_state.student_data['student_id']
+#     res=supabase.table('subjects').select('subject_id,name').eq('subject_code',subject_code).execute()
+#     if not res.data:
+#         st.error('Subject Code not found!')
+#         if st.button("Close"):
+#             st.query_params.clear()
+#             st.rerun()
+#         return
+#     subject=res.data[0]
+#     check=supabase.table('subject_students').select('*').eq('subject_id',subject['subject_id']).eq('student_id',student_id).execute()
+#     if check.data:
+#         st.info('You are already enrolled in this program!')
+#         if st.button("Got it!"):
+#             st.query_params.clear()
+#             st.rerun()
+#         return
+    
+#     st.markdown(f"Would you like to enroll in {subject['name']}?")
+
+#     col1,col2=st.columns(2)
+#     with col1:
+#         if st.button('No thanks'):
+#             st.query_params.clear()
+#             st.rerun()
+        
+#     with col2:
+#         if st.button('Yes enroll now!', type="primary", width="stretch"):
+#             enroll_student_to_subject(student_id,subject['subject_id'])
+#             st.success('Joined Successfully!')
+#             st.query_params.clear()
+#             time.sleep(1)
+#             st.rerun()
 import streamlit as st
-from src.database.config import supabase
-from src.database.db import enroll_student_to_subject
 import time
+from src.database.db import (
+    get_subject_by_code_section,
+    enroll_student_to_subject
+)
 
 @st.dialog("Quick Enrollment")
-def auto_enroll_dialog(subject_code):
+def auto_enroll_dialog(subject_code, section):
     st.markdown("""
         <style>
             /* Main dialog title and headings */
@@ -20,35 +76,75 @@ def auto_enroll_dialog(subject_code):
             }
         </style>
         """, unsafe_allow_html=True)
-    student_id=st.session_state.student_data['student_id']
-    res=supabase.table('subjects').select('subject_id,name').eq('subject_code',subject_code).execute()
-    if not res.data:
-        st.error('Subject Code not found!')
-        if st.button("Close"):
-            st.query_params.clear()
-            st.rerun()
-        return
-    subject=res.data[0]
-    check=supabase.table('subject_students').select('*').eq('subject_id',subject['subject_id']).eq('student_id',student_id).execute()
-    if check.data:
-        st.info('You are already enrolled in this program!')
-        if st.button("Got it!"):
-            st.query_params.clear()
-            st.rerun()
-        return
-    
-    st.markdown(f"Would you like to enroll in {subject['name']}?")
+    student_id = st.session_state.student_data['student_id']
 
-    col1,col2=st.columns(2)
+    subject_code = subject_code.strip().upper()
+    section = section.strip().upper()
+
+    subject = get_subject_by_code_section(
+        subject_code,
+        section
+    )
+
+    if not subject:
+
+        st.error(
+            f"Class not found: {subject_code} - Section {section}"
+        )
+
+        if st.button("Close", key="close_invalid_enrollment"):
+            st.query_params.clear()
+            st.rerun()
+
+        return
+
+    st.markdown(f"""
+        ### Confirm Enrollment
+
+        **Subject:** {subject['name']}
+
+        **Subject Code:** {subject['subject_code']}
+
+        **Section:** {subject['section']}
+    """)
+
+    col1, col2 = st.columns(2)
+
     with col1:
-        if st.button('No thanks'):
+
+        if st.button(
+            "No thanks",
+            width="stretch",
+            key="cancel_auto_enrollment"
+        ):
             st.query_params.clear()
             st.rerun()
-        
+
     with col2:
-        if st.button('Yes enroll now!', type="primary", width="stretch"):
-            enroll_student_to_subject(student_id,subject['subject_id'])
-            st.success('Joined Successfully!')
-            st.query_params.clear()
-            time.sleep(1)
-            st.rerun()
+
+        if st.button(
+            "Yes, enroll now!",
+            type="primary",
+            width="stretch",
+            key="confirm_auto_enrollment"
+        ):
+
+            try:
+
+                enroll_student_to_subject(
+                    student_id,
+                    subject['subject_id']
+                )
+
+                st.success("Joined Successfully!")
+
+                time.sleep(1)
+
+                st.query_params.clear()
+                st.rerun()
+
+            except Exception:
+
+                st.error(
+                    "Enrollment failed. You may already be enrolled."
+                )
