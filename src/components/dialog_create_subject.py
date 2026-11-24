@@ -2,21 +2,62 @@ import streamlit as st
 from src.database.db import create_subject
 @st.dialog("Create New Subject")
 def create_subject_dialog(teacher_id):
+            
     st.markdown("""
-        <style>
-                    /* Main dialog title and headings */
-                    [data-testid="stDialog"] h1,
-                    [data-testid="stDialog"] h2,
-                    [data-testid="stDialog"] h3,
-                    [data-testid="stDialog"] .stMarkdown h1,
-                    [data-testid="stDialog"] .stMarkdown h2,
-                    [data-testid="stDialog"] .stMarkdown h3 {
-                        color: var(--text-color) !important;
-                        opacity: 1 !important;
-                        font-weight: 700 !important;
-                    }
-        </style>
-    """, unsafe_allow_html=True)
+            <style>
+
+            /* Apply theme-aware text color throughout the dialog */
+            [data-testid="stDialog"],
+            [data-testid="stDialog"] div,
+            [data-testid="stDialog"] p,
+            [data-testid="stDialog"] label,
+            [data-testid="stDialog"] span,
+            [data-testid="stDialog"] h1,
+            [data-testid="stDialog"] h2,
+            [data-testid="stDialog"] h3 {
+                color: var(--text-color) !important;
+            }
+
+            /* Input fields */
+            [data-testid="stDialog"] input,
+            [data-testid="stDialog"] textarea {
+                color: var(--text-color) !important;
+                -webkit-text-fill-color: var(--text-color) !important;
+                caret-color: var(--text-color) !important;
+            }
+
+            /* Input placeholders */
+            [data-testid="stDialog"] input::placeholder,
+            [data-testid="stDialog"] textarea::placeholder {
+                color: var(--secondary-text-color) !important;
+                opacity: 1 !important;
+                -webkit-text-fill-color: var(--secondary-text-color) !important;
+            }
+
+            /* Widget labels */
+            [data-testid="stDialog"] [data-testid="stWidgetLabel"] p {
+                color: var(--text-color) !important;
+            }
+
+            /* Markdown text */
+            [data-testid="stDialog"] [data-testid="stMarkdownContainer"] p {
+                color: var(--text-color) !important;
+            }
+
+            /* Keep buttons readable */
+            [data-testid="stDialog"] button p,
+            [data-testid="stDialog"] button span {
+                color: inherit !important;
+            }
+
+            /* Dialog title */
+            [data-testid="stDialog"] [data-testid="stDialogHeader"] {
+                color: var(--text-color) !important;
+            }
+
+            </style>
+        """, unsafe_allow_html=True)
+
     st.write("Enter the details of new subject:")
     sub_id = st.text_input(
         'Subject Code',
