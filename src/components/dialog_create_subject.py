@@ -4,58 +4,17 @@ from src.database.db import create_subject
 def create_subject_dialog(teacher_id):
     st.markdown("""
         <style>
-            /* Dialog background and all text */
-            [data-testid="stDialog"] {
-                color: var(--text-color) !important;
-            }
-
-            /* Dialog title and all headings */
-            [data-testid="stDialog"] h1,
-            [data-testid="stDialog"] h2,
-            [data-testid="stDialog"] h3,
-            [data-testid="stDialog"] p,
-            [data-testid="stDialog"] label,
-            [data-testid="stDialog"] span,
-            [data-testid="stDialog"] .stMarkdown,
-            [data-testid="stDialog"] .stMarkdown p,
-            [data-testid="stDialog"] [data-testid="stCaptionContainer"] {
-                color: var(--text-color) !important;
-                opacity: 1 !important;
-            }
-
-            /* Input labels */
-            [data-testid="stDialog"] .stTextInput label {
-                color: var(--text-color) !important;
-                font-weight: 600 !important;
-            }
-
-            /* Input text */
-            [data-testid="stDialog"] input {
-                color: var(--text-color) !important;
-                caret-color: var(--text-color) !important;
-            }
-
-            /* Input placeholder */
-            [data-testid="stDialog"] input::placeholder {
-                color: var(--text-color) !important;
-                opacity: 0.55 !important;
-            }
-
-            /* Buttons */
-            [data-testid="stDialog"] button {
-                color: var(--text-color) !important;
-            }
-
-            /* Success, warning and error messages */
-            [data-testid="stDialog"] [data-testid="stAlert"] p {
-                color: inherit !important;
-            }
-
-            /* Code blocks */
-            [data-testid="stDialog"] [data-testid="stCode"] {
-                opacity: 1 !important;
-            }
-
+                    /* Main dialog title and headings */
+                    [data-testid="stDialog"] h1,
+                    [data-testid="stDialog"] h2,
+                    [data-testid="stDialog"] h3,
+                    [data-testid="stDialog"] .stMarkdown h1,
+                    [data-testid="stDialog"] .stMarkdown h2,
+                    [data-testid="stDialog"] .stMarkdown h3 {
+                        color: var(--text-color) !important;
+                        opacity: 1 !important;
+                        font-weight: 700 !important;
+                    }
         </style>
     """, unsafe_allow_html=True)
     st.write("Enter the details of new subject:")
